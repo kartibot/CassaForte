@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Cassaforte password</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EDEDED;--card:#FFFFFF;--ink:#111111;--mute:#5E5E5E;--line:#D0D0D0;--acc:#111111;--accink:#FFFFFF;--bad:#B3261E;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000000;--card:#1A1A1A;--ink:#F2F2F2;--mute:#9A9A9A;--line:#333333;--acc:#F2F2F2;--accink:#0D0D0D;--bad:#FF8A80}}
+:root[data-theme="dark"]{--bg:#000000;--card:#1A1A1A;--ink:#F2F2F2;--mute:#9A9A9A;--line:#333333;--acc:#F2F2F2;--accink:#0D0D0D;--bad:#FF8A80}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+h1{font-size:28px;margin:0;letter-spacing:-.02em}
+h2{font-size:18px;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+.mute{color:var(--mute);margin:0 0 12px}
+.note{background:var(--card);border-left:4px solid var(--bad);padding:10px 12px;margin:0 0 16px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input{width:100%;padding:10px 12px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px}
+input.mono,.pw{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+button{font:inherit;font-weight:600;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+button.pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+button.link{border:0;padding:6px 0;color:var(--mute);font-weight:400;text-decoration:underline}
+button.bad{color:var(--bad);border-color:var(--bad)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>input{flex:1;min-width:140px}
+.actions{margin-top:16px}
+.err{color:var(--bad);min-height:1.5em;margin:8px 0 0}
+.item{border-top:1px solid var(--line);padding:14px 0}
+.item:first-child{border-top:0}
+.item b{font-size:17px}
+.pw{margin:4px 0 10px;word-break:break-all}
+.item .row button{padding:5px 10px;font-size:14px}
+.empty{color:var(--mute);text-align:center;padding:20px 0}
+header{flex-wrap:wrap;gap:8px}
+.hl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#drawer{position:fixed;top:0;bottom:0;left:0;width:min(340px,88vw);background:var(--card);border-right:1px solid var(--line);z-index:20;transform:translateX(-100%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+#drawer.open{transform:none;visibility:visible;transition:transform .25s ease}
+#drawer .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+#list{overflow-y:auto;flex:1;margin-top:8px}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10;opacity:0;pointer-events:none;transition:opacity .25s}
+#scrim.open{opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){#drawer,#scrim{transition:none}}
+body{font-size:17px;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+main{padding-bottom:110px}
+input{min-height:48px;font-size:17px}
+button{min-height:48px;padding:10px 16px;touch-action:manipulation}
+button.link{min-height:44px}
+.row>#fp{flex:1 1 100%}
+#showP,#genP{flex:1}
+.item .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item .row button{padding:10px 8px;font-size:15px;min-height:46px}
+#list{overscroll-behavior:contain}
+#drawer{width:min(360px,90vw)}
+#menuBtn{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:5;min-height:54px;background:var(--acc);color:var(--accink);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#menuBtn[hidden]{display:none}
+button.pri,#menuBtn{border:2px solid var(--ink)}
+:root{color-scheme:light dark}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Cassaforte</h1><button id="lockBtn" hidden>Blocca</button></header>
+<p id="warn" class="note" hidden>Il browser non permette di salvare i dati: le password restano solo finché questa pagina è aperta.</p>
+
+<section id="lock" class="card">
+  <h2 id="lockTitle"></h2>
+  <p id="lockHelp" class="mute"></p>
+  <form id="lockForm">
+    <label for="mp">Master password</label>
+    <input id="mp" type="password" autocomplete="off">
+    <div id="mp2row" hidden><label for="mp2">Ripeti master password</label><input id="mp2" type="password" autocomplete="off"></div>
+    <p id="err" class="err" role="alert"></p>
+    <div class="actions"><button class="pri" id="go" type="submit"></button></div>
+  </form>
+  <button class="link" id="reset" hidden>Cancella tutto e ricomincia</button>
+</section>
+
+<section id="vault" hidden>
+  <button id="menuBtn" hidden aria-expanded="false" aria-controls="drawer">Rubrica</button>
+  <div class="card">
+    <h2 id="formTitle">Nuova password</h2>
+    <form id="addForm">
+      <label for="fn">Applicazione</label>
+      <input id="fn" autocomplete="off" autocapitalize="words" required>
+      <label for="fu">Utente o email (facoltativo)</label>
+      <input id="fu" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <label for="fp">Password</label>
+      <div class="row">
+        <input id="fp" class="mono" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+        <button type="button" id="showP">Mostra</button>
+        <button type="button" id="genP">Genera</button>
+      </div>
+      <div class="actions row">
+        <button class="pri" type="submit" id="saveBtn">Salva</button>
+        <button type="button" id="cancelEdit" hidden>Annulla modifica</button>
+      </div>
+    </form>
+  </div>
+  <p class="mute">Si blocca da sola dopo 5 minuti di inattività. Apri la rubrica per vedere le password salvate.</p>
+  <div id="scrim"></div>
+  <aside id="drawer" aria-label="Rubrica password">
+    <div class="dh"><h2>Rubrica</h2><button type="button" id="closeMenu">Chiudi</button></div>
+    <label for="q" style="margin-top:0">Cerca</label>
+    <input id="q" autocomplete="off" autocapitalize="none" placeholder="Nome applicazione">
+    <div id="list"></div>
+  </aside>
+</section>
+</main>
+
+<script>
+const KEY = "cassaforte.v1";
+const $ = s => document.querySelector(s);
+const te = new TextEncoder(), td = new TextDecoder();
+let key = null, salt = null, items = [], editing = null, timer = null, numMode = true;
+const shown = new Set();
+
+function b64(buf){ let s = ""; for (const x of new Uint8Array(buf)) s += String.fromCharCode(x); return btoa(s); }
+function unb64(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+function readStore(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
+function writeStore(v){ try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { $("#warn").hidden = false; } }
+
+async function derive(pw, s){
+  const m = await crypto.subtle.importKey("raw", te.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt:s, iterations:250000, hash:"SHA-256"}, m, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function persist(){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, te.encode(JSON.stringify(items)));
+  writeStore({salt:b64(salt), iv:b64(iv), data:b64(ct), num:numMode});
+}
+
+function setMenu(o){ $("#drawer").classList.toggle("open", o); $("#scrim").classList.toggle("open", o); $("#menuBtn").setAttribute("aria-expanded", o); if (o) $("#closeMenu").focus(); else if (key) $("#menuBtn").focus(); }
+function showLock(){
+  const st0 = readStore(), has = !!st0, num = !has || !!st0.num;
+  for (const id of ["#mp","#mp2"]) { $(id).inputMode = num ? "numeric" : "text"; $(id).dataset.num = num ? "1" : ""; $(id).placeholder = num ? "Solo numeri" : ""; }
+  $("#vault").hidden = true; $("#lock").hidden = false; $("#lockBtn").hidden = true; $("#menuBtn").hidden = true; setMenu(false);
+  $("#lockTitle").textContent = has ? "Sblocca la cassaforte" : "Crea la tua cassaforte";
+  $("#lockHelp").textContent = has ? "Inserisci la master password." : "Scegli una master password di soli numeri, di almeno 8 cifre. Se la dimentichi, i dati non si possono recuperare.";
+  $("#go").textContent = has ? "Sblocca" : "Crea cassaforte";
+  $("#mp2row").hidden = has; $("#reset").hidden = !has;
+  $("#mp").value = ""; $("#mp2").value = ""; $("#err").textContent = "";
+  $("#mp").focus();
+}
+function lock(){ key = null; items = []; shown.clear(); clearTimeout(timer); resetForm(); showLock(); }
+function bump(){ if (!key) return; clearTimeout(timer); timer = setTimeout(lock, 300000); }
+["click","keydown","touchstart"].forEach(e => document.addEventListener(e, bump));
+let hiddenAt = 0;
+document.addEventListener("visibilitychange", () => { if (document.hidden) hiddenAt = Date.now(); else if (key && Date.now() - hiddenAt > 60000) lock(); });
+
+function openVault(){
+  $("#lock").hidden = true; $("#vault").hidden = false; $("#lockBtn").hidden = false; $("#menuBtn").hidden = false;
+  render(); bump();
+}
+
+$("#lockForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const pw = $("#mp").value, st = readStore(), err = $("#err");
+  err.textContent = "";
+  try {
+    if (!st) {
+      if (!/^\d{8,}$/.test(pw)) { err.textContent = "Usa solo numeri, almeno 8 cifre."; return; }
+      if (pw !== $("#mp2").value) { err.textContent = "Le due password non coincidono."; return; }
+      salt = crypto.getRandomValues(new Uint8Array(16)); numMode = true;
+      key = await derive(pw, salt); items = [];
+      await persist();
+    } else {
+      salt = unb64(st.salt); numMode = !!st.num;
+      const k = await derive(pw, salt);
+      try {
+        const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(st.iv)}, k, unb64(st.data));
+        items = JSON.parse(td.decode(pt)); key = k;
+      } catch (x) { err.textContent = "Master password errata."; return; }
+    }
+    openVault();
+  } catch (x) { err.textContent = "Questo browser non supporta la cifratura necessaria."; }
+});
+
+for (const id of ["#mp","#mp2"]) $(id).addEventListener("input", e => { if (e.target.dataset.num) e.target.value = e.target.value.replace(/\D/g, ""); });
+let resetArmed = false;
+$("#reset").addEventListener("click", () => {
+  if (!resetArmed) { resetArmed = true; $("#reset").textContent = "Premi ancora per cancellare tutte le password"; setTimeout(() => { resetArmed = false; $("#reset").textContent = "Cancella tutto e ricomincia"; }, 4000); return; }
+  try { localStorage.removeItem(KEY); } catch (x) {}
+  resetArmed = false; $("#reset").textContent = "Cancella tutto e ricomincia"; showLock();
+});
+$("#lockBtn").addEventListener("click", lock);
+$("#menuBtn").addEventListener("click", () => setMenu(true));
+$("#closeMenu").addEventListener("click", () => setMenu(false));
+$("#scrim").addEventListener("click", () => setMenu(false));
+document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+let sx = 0, sy = 0;
+$("#drawer").addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+$("#drawer").addEventListener("touchend", e => { const t = e.changedTouches[0]; if (t.clientX - sx < -70 && Math.abs(t.clientY - sy) < 50) setMenu(false); }, {passive:true});
+
+function resetForm(){
+  editing = null; $("#addForm").reset(); $("#fp").type = "password"; $("#showP").textContent = "Mostra";
+  $("#formTitle").textContent = "Nuova password"; $("#saveBtn").textContent = "Salva"; $("#cancelEdit").hidden = true;
+}
+$("#cancelEdit").addEventListener("click", resetForm);
+$("#showP").addEventListener("click", () => {
+  const f = $("#fp"), h = f.type === "password"; f.type = h ? "text" : "password"; $("#showP").textContent = h ? "Nascondi" : "Mostra";
+});
+$("#genP").addEventListener("click", () => {
+  const cs = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*?-_";
+  const lim = 256 - (256 % cs.length); let out = "";
+  while (out.length < 20) for (const b of crypto.getRandomValues(new Uint8Array(32))) { if (b < lim && out.length < 20) out += cs[b % cs.length]; }
+  $("#fp").value = out; $("#fp").type = "text"; $("#showP").textContent = "Nascondi";
+});
+
+$("#addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const rec = {name:$("#fn").value.trim(), user:$("#fu").value.trim(), pw:$("#fp").value};
+  if (!rec.name || !rec.pw) return;
+  if (editing) items = items.map(x => x.id === editing ? {...x, ...rec} : x);
+  else items.push({id:crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()), ...rec});
+  await persist(); resetForm(); render();
+});
+$("#q").addEventListener("input", render);
+
+function el(tag, text, cls){ const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; }
+function btn(label, fn, cls){ const b = el("button", label, cls); b.type = "button"; b.addEventListener("click", fn); return b; }
+async function copy(text, b){
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (x) {
+    const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select();
+    try { ok = document.execCommand("copy"); } catch (y) {} t.remove();
+  }
+  const old = b.textContent; b.textContent = ok ? "Copiata" : "Copia non riuscita"; setTimeout(() => b.textContent = old, 1500);
+}
+
+function render(){
+  const list = $("#list"), q = $("#q").value.trim().toLowerCase();
+  list.replaceChildren(); $("#menuBtn").textContent = "Rubrica (" + items.length + ")";
+  const vis = items.filter(x => !q || x.name.toLowerCase().includes(q)).sort((a,b) => a.name.localeCompare(b.name, "it"));
+  if (!vis.length) { list.append(el("p", items.length ? "Nessun risultato per questa ricerca." : "Nessuna password salvata. Aggiungi la prima qui sopra.", "empty")); return; }
+  for (const x of vis) {
+    const d = el("div", null, "item");
+    d.append(el("b", x.name));
+    if (x.user) d.append(el("div", x.user, "mute"));
+    d.append(el("div", shown.has(x.id) ? x.pw : "••••••••••", "pw"));
+    const r = el("div", null, "row");
+    r.append(btn(shown.has(x.id) ? "Nascondi" : "Mostra", () => { shown.has(x.id) ? shown.delete(x.id) : shown.add(x.id); render(); }));
+    const c = btn("Copia", () => copy(x.pw, c)); r.append(c);
+    r.append(btn("Modifica", () => {
+      editing = x.id; $("#fn").value = x.name; $("#fu").value = x.user || ""; $("#fp").value = x.pw;
+      $("#formTitle").textContent = "Modifica password"; $("#saveBtn").textContent = "Salva modifiche"; $("#cancelEdit").hidden = false;
+      setMenu(false); $("#fn").focus(); window.scrollTo({top:0});
+    }));
+    let armed = false;
+    const del = btn("Elimina", async () => {
+      if (!armed) { armed = true; del.textContent = "Conferma"; setTimeout(() => { armed = false; del.textContent = "Elimina"; }, 3000); return; }
+      items = items.filter(i => i.id !== x.id); shown.delete(x.id); await persist(); render();
+    }, "bad");
+    r.append(del); d.append(r); list.append(d);
+  }
+}
+showLock();
+</script>
+</body>
+</html>
